@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1a15">
+<title>Vocabulary Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1a15;
+    --bg-deep:#0a130f;
+    --surface:#1a2a22;
+    --surface-line:rgba(243,236,217,0.14);
+    --ink:#f4eedc;
+    --ink-soft:#9fb6aa;
+    --gold:#d8ad3d;
+    --gold-soft:#ecd791;
+    --rust:#e3835f;
+    --rust-bg:rgba(227,131,95,0.16);
+    --green:#86c08c;
+    --green-bg:rgba(134,192,140,0.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;margin:0;padding:0;overflow:hidden;}
+  body{
+    background:radial-gradient(130% 140% at 50% -10%, var(--bg), var(--bg-deep));
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+  }
+  .app{
+    height:100dvh;
+    width:100vw;
+    display:flex;
+    flex-direction:column;
+    padding-top:max(18px, env(safe-area-inset-top));
+    padding-bottom:max(16px, env(safe-area-inset-bottom));
+    padding-left:max(18px, env(safe-area-inset-left));
+    padding-right:max(18px, env(safe-area-inset-right));
+  }
+  .navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+    flex:none;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .score{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;
+    letter-spacing:.06em;
+    color:var(--gold-soft);
+    white-space:nowrap;
+  }
+  .score b{
+    color:var(--gold);
+    font-size:19px;
+  }
+  .progress-track{
+    width:100%;
+    height:4px;
+    background:rgba(243,236,217,0.12);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:6px;
+    flex:none;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--gold);
+    transition:width .35s ease;
+  }
+  .counter{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:18px;
+    flex:none;
+  }
+  .stage{
+    flex:1;
+    min-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-y:auto;
+  }
+  .hidden{display:none !important;}
+  .quiz-card{
+    width:100%;
+    max-width:600px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:26px;
+    opacity:0;
+    transform:translateY(10px);
+    animation:rise .4s ease forwards;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .quiz-card{animation:none;opacity:1;transform:none;}
+  }
+  @keyframes rise{ to{opacity:1;transform:translateY(0);} }
+
+  .badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--gold);
+    border:1px solid var(--gold);
+    border-radius:20px;
+    padding:4px 12px;
+    margin-bottom:14px;
+  }
+  .prompt{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .word{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(2.3rem,9vw,3.6rem);
+    line-height:1.08;
+    margin:0;
+    color:var(--ink);
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    text-align:left;
+    width:100%;
+    background:var(--surface);
+    border:1.5px solid var(--surface-line);
+    border-radius:10px;
+    padding:16px 16px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-size:18px;
+    line-height:1.45;
+    color:var(--ink);
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{border-color:var(--ink-soft);}
+  .opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .opt .letter{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:13px;
+    color:var(--gold);
+    border:1px solid var(--gold);
+    border-radius:50%;
+    width:24px;height:24px;
+    flex:none;
+    display:flex;align-items:center;justify-content:center;
+    margin-top:1px;
+  }
+  .opt.correct{background:var(--green-bg);border-color:var(--green);}
+  .opt.correct .letter{border-color:var(--green);color:var(--green);}
+  .opt.incorrect{background:var(--rust-bg);border-color:var(--rust);}
+  .opt.incorrect .letter{border-color:var(--rust);color:var(--rust);}
+  .opt[disabled]{cursor:default;}
+  .opt.dim{opacity:.5;}
+
+  .feedback{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:.04em;
+    margin-top:4px;
+    color:var(--ink-soft);
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .example{
+    display:none;
+    margin-top:4px;
+    padding:16px 18px;
+    background:rgba(216,173,61,0.1);
+    border-left:3px solid var(--gold);
+    border-radius:6px;
+  }
+  .example.show{display:block;}
+  .example-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+  .example-text{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:17px;
+    line-height:1.5;
+    color:var(--ink);
+  }
+  .action-bar{
+    flex:none;
+    width:100%;
+    max-width:600px;
+    margin:0 auto;
+    padding-top:14px;
+  }
+  .next-btn{
+    width:100%;
+    background:var(--gold);
+    color:var(--bg-deep);
+    border:none;
+    border-radius:10px;
+    padding:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .next-btn:hover{background:var(--gold-soft);}
+  .next-btn.hidden{display:none !important;}
+  .nav-row{display:flex;gap:10px;}
+  .back-btn{
+    flex:none;
+    width:58px;
+    background:var(--surface);
+    color:var(--ink);
+    border:1px solid var(--surface-line);
+    border-radius:10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:20px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .back-btn:hover{background:var(--bg);}
+  .back-btn.hidden{display:none !important;}
+
+  .end-card{ text-align:center; }
+  .end-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+  }
+  .end-score{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:clamp(3rem,14vw,4.4rem);
+    color:var(--gold);
+    margin:6px 0 10px;
+  }
+  .end-remark{
+    font-size:17px;
+    color:var(--ink-soft);
+    margin-bottom:28px;
+  }
+
+  /* Landscape layout */
+  @media (orientation: landscape){
+    .app{padding-top:max(12px, env(safe-area-inset-top));padding-bottom:max(12px, env(safe-area-inset-bottom));}
+    .navbar{margin-bottom:6px;}
+    .counter{margin-bottom:10px;}
+    .quiz-card{
+      flex-direction:row;
+      align-items:center;
+      max-width:980px;
+      gap:40px;
+    }
+    .word-pane{
+      flex:0 0 38%;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .options-pane{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      max-height:100%;
+      overflow-y:auto;
+      padding-right:2px;
+    }
+    .word{font-size:clamp(1.9rem,5.5vw,2.8rem);}
+    .opt{font-size:16px;padding:13px 14px;}
+    .example-text{font-size:15px;}
+    .action-bar{max-width:980px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="navbar">
+    <div class="eyebrow">Vocabulary Review</div>
+    <div class="score">SCORE <b id="scoreNum">0</b>/<span id="scoreTotal">0</span></div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="counter" id="counterLabel">Card 1 of 21</div>
+
+  <div class="stage" id="loadingShell">
+    <div class="quiz-card end-card">
+      <div>
+        <div class="end-eyebrow">Loading words</div>
+        <div class="end-remark" id="loadingText">Pulling the latest list from your Google Sheet…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage hidden" id="quizShell">
+    <div class="quiz-card" id="quizCard">
+      <div class="word-pane">
+        <div class="badge">Vocab</div>
+        <div class="prompt">Choose the correct meaning</div>
+        <div class="word" id="wordDisplay">word</div>
+      </div>
+      <div class="options-pane">
+        <div class="options" id="optionsList"></div>
+        <div class="feedback" id="feedbackLine"></div>
+        <div class="example" id="exampleBlock">
+          <div class="example-label">Example</div>
+          <div class="example-text" id="exampleText"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage hidden" id="endShell">
+    <div class="quiz-card end-card">
+      <div>
+        <div class="end-eyebrow">Deck complete</div>
+        <div class="end-score" id="endScoreText">0 / 21</div>
+        <div class="end-remark" id="endRemark">Nice work.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <div class="nav-row">
+      <button class="back-btn hidden" id="backBtn" aria-label="Previous word">←</button>
+      <button class="next-btn hidden" id="nextBtn">Next word →</button>
+    </div>
+    <button class="next-btn hidden" id="restartBtn">Play again →</button>
+  </div>
+</div>
+
+<script>
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSULPIxbDX4y9FHYQyQTgRKuxkdrcXvTdb3zDCDkIY3AUXD07SrF5VGwMTBBl2NOJkMwjAT0fDo_k1L/pub?gid=0&single=true&output=csv';
+
+// Used only if the live fetch fails (e.g. offline, or sharing permissions change).
+const FALLBACK_WORDS = [
+  {w:"Infer", c:"To work out or conclude something from evidence and reasoning, rather than being told directly.", ex:"From his silence, she could infer that something was wrong."},
+  {w:"Twiddle my thumbs", c:"To wait around with nothing to do, often impatiently.", ex:"With the meeting delayed an hour, all I could do was twiddle my thumbs in the lobby."},
+  {w:"Top off", c:"To fill something to the brim, finish something off, or serve as the final element in a string of events.", ex:"I'm heading to the gas station to top off the tank before our road trip."},
+  {w:"Qualms", c:"A feeling of doubt or unease about whether an action is right or appropriate.", ex:"He had no qualms about asking for a raise."},
+  {w:"Fawn", c:"A young deer.", ex:"The fawn stayed close to its mother at the edge of the woods."},
+  {w:"Stag", c:"An adult male deer.", ex:"A lone stag crossed the trail just before dusk."},
+  {w:"Taxing", c:"Demanding a great deal of physical or mental effort; exhausting.", ex:"The week of back-to-back exams was mentally taxing."},
+  {w:"Wager", c:"An agreement to risk something, usually money, on the outcome of an uncertain event; a bet.", ex:"I'll wager it's going to rain later."},
+  {w:"Vindicate", c:"To clear someone of blame or suspicion, or to show that they were right.", ex:"The new evidence ultimately vindicated her account of events."},
+  {w:"Give way", c:"To yield, collapse, or be replaced by something else.", ex:"After hours of debate, he finally gave way to their demands."},
+  {w:"In harm's way", c:"In a position where danger or injury is likely.", ex:"The captain refused to put his crew in harm's way for an unnecessary risk."},
+  {w:"Bend over backward", c:"To make an exceptional effort to help or please someone.", ex:"She bent over backward to make the new intern feel welcome."},
+  {w:"Caught flat-footed", c:"To be caught completely unprepared or by surprise.", ex:"The sudden policy change caught the whole team flat-footed."},
+  {w:"No sooner...than", c:"Used to say that one event happened immediately after another.", ex:"No sooner had they set their feet on dry ground than the waters returned to their place."},
+  {w:"Talk shop", c:"To discuss work-related matters, especially in a social setting where it isn't appropriate.", ex:"Even at the birthday party, the two engineers couldn't resist talking shop."},
+  {w:"Heap", c:"A large, often disordered pile or accumulation of things.", ex:"He left a heap of laundry on the floor."},
+  {w:"Heed", c:"To pay close attention to and take seriously, such as advice or a warning.", ex:"He should have heeded the warnings."},
+  {w:"Jeer", c:"To shout mockingly or scornfully at someone.", ex:"The crowd began to jeer as the referee made the call."},
+  {w:"Exonerate", c:"To officially clear someone of blame or wrongdoing.", ex:"New DNA evidence exonerated him after twenty years in prison."},
+  {w:"If only", c:"Used to express a regretful wish, or to mean \"even if for no other reason than.\"", ex:"If only I had listened to you."},
+  {w:"Rank and file", c:"The ordinary members of an organization, as distinct from its leaders.", ex:"The proposal was popular with the rank and file, even if management hesitated."}
+];
+
+let WORDS = [];
+
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i], next = text[i+1];
+    if(inQuotes){
+      if(c === '"' && next === '"'){ field += '"'; i++; }
+      else if(c === '"'){ inQuotes = false; }
+      else { field += c; }
+    } else {
+      if(c === '"'){ inQuotes = true; }
+      else if(c === ','){ row.push(field); field = ''; }
+      else if(c === '\r'){ /* skip */ }
+      else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+      else { field += c; }
+    }
+  }
+  if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+function parseWordsCSV(text){
+  let rows = parseCSV(text).filter(r => r.length >= 2 && r[0] && r[0].trim());
+  if(rows[0] && rows[0][0] && rows[0][0].trim().toLowerCase() === 'word'){
+    rows = rows.slice(1);
+  }
+  return rows
+    .map(r => ({ w: (r[0]||'').trim(), c: (r[1]||'').trim(), ex: (r[2]||'').trim() }))
+    .filter(x => x.w && x.c);
+}
+
+async function loadWords(){
+  try{
+    const res = await fetch(SHEET_URL);
+    if(!res.ok) throw new Error('Fetch failed: ' + res.status);
+    const text = await res.text();
+    const parsed = parseWordsCSV(text);
+    if(parsed.length < 4) throw new Error('Parsed too few entries — got ' + parsed.length);
+    WORDS = parsed;
+    return true;
+  }catch(err){
+    console.error('Live word list failed, using built-in fallback:', err);
+    WORDS = FALLBACK_WORDS;
+    return false;
+  }
+}
+
+let deck = [];
+let idx = 0;
+let score = 0;
+let bag = [];
+
+function drawTen(){
+  const drawn = [];
+  while(drawn.length < 10){
+    if(bag.length === 0){
+      bag = shuffle(WORDS.map((_,i)=>i));
+    }
+    const candidate = bag.shift();
+    if(drawn.includes(candidate)){
+      bag.push(candidate);
+      continue;
+    }
+    drawn.push(candidate);
+  }
+  return drawn;
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function buildDeck(){
+  const picks = drawTen().map(i => WORDS[i]);
+  deck = shuffle(picks).map(item=>{
+    const otherIdx = shuffle(WORDS.map((_,i)=>i).filter(i => WORDS[i].w !== item.w)).slice(0, 3);
+    const distractors = otherIdx.map(i => WORDS[i].c);
+    const opts = shuffle([{text:item.c,correct:true}, ...distractors.map(t=>({text:t,correct:false}))]);
+    return {word:item.w, options:opts, ex:item.ex, chosen:null};
+  });
+  idx = 0;
+  score = 0;
+  document.getElementById('scoreTotal').textContent = deck.length;
+  document.getElementById('endShell').classList.add('hidden');
+  document.getElementById('quizShell').classList.remove('hidden');
+  document.getElementById('restartBtn').classList.add('hidden');
+  renderCard();
+}
+
+function renderCard(){
+  const item = deck[idx];
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('counterLabel').textContent = `Card ${idx+1} of ${deck.length}`;
+  document.getElementById('progressFill').style.width = (idx/deck.length*100) + '%';
+
+  const card = document.getElementById('quizCard');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = '';
+
+  document.getElementById('wordDisplay').textContent = item.word;
+  document.getElementById('feedbackLine').classList.remove('show');
+  document.getElementById('exampleBlock').classList.remove('show');
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('backBtn').classList.toggle('hidden', idx === 0);
+
+  const list = document.getElementById('optionsList');
+  list.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  item.options.forEach((opt,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt.text}</span>`;
+    btn.addEventListener('click', ()=>handleAnswer(i, item));
+    list.appendChild(btn);
+  });
+
+  if(item.chosen !== null){
+    applyAnswered(item);
+  }
+}
+
+function applyAnswered(item){
+  const allBtns = document.querySelectorAll('.opt');
+  allBtns.forEach((b,i)=>{
+    b.setAttribute('disabled','true');
+    const opt = item.options[i];
+    if(opt.correct) b.classList.add('correct');
+    else if(i === item.chosen) b.classList.add('incorrect');
+    else b.classList.add('dim');
+  });
+  const wasCorrect = item.options[item.chosen].correct;
+  const feedback = document.getElementById('feedbackLine');
+  feedback.textContent = wasCorrect ? 'Correct.' : 'Not quite — correct answer highlighted below.';
+  feedback.classList.add('show');
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('exampleText').textContent = item.ex;
+  document.getElementById('exampleBlock').classList.add('show');
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+function handleAnswer(i, item){
+  if(item.chosen !== null) return;
+  item.chosen = i;
+  if(item.options[i].correct) score++;
+  applyAnswered(item);
+}
+
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  idx++;
+  if(idx >= deck.length){
+    showEnd();
+  } else {
+    renderCard();
+  }
+});
+
+document.getElementById('backBtn').addEventListener('click', ()=>{
+  if(idx > 0){
+    idx--;
+    renderCard();
+  }
+});
+
+function showEnd(){
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('quizShell').classList.add('hidden');
+  document.getElementById('endShell').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('backBtn').classList.add('hidden');
+  document.getElementById('restartBtn').classList.remove('hidden');
+  document.getElementById('endScoreText').textContent = `${score} / ${deck.length}`;
+  let remark = '';
+  const pct = score/deck.length;
+  if(pct === 1) remark = 'Perfect deck. Every word stuck.';
+  else if(pct >= 0.8) remark = 'Strong recall — just a few to revisit.';
+  else if(pct >= 0.5) remark = 'Solid start. Worth another pass.';
+  else remark = 'Good groundwork — run it back to reinforce these.';
+  document.getElementById('endRemark').textContent = remark;
+}
+
+document.getElementById('restartBtn').addEventListener('click', buildDeck);
+
+async function init(){
+  const success = await loadWords();
+  document.getElementById('loadingShell').classList.add('hidden');
+  document.getElementById('quizShell').classList.remove('hidden');
+  if(!success){
+    document.getElementById('loadingText').textContent = 'Could not load the live list — using the built-in backup words.';
+  }
+  buildDeck();
+}
+init();
+</script>
+</body>
+</html>
