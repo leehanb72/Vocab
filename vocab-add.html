@@ -184,9 +184,47 @@ async function getSheet(){
   return sheetCache;
 }
 
+// Normalize for comparison: lowercase, strip punctuation, collapse spaces
+function normalizePhrase(s){
+  return s.toLowerCase()
+          .replace(/[^a-z0-9\s]/g,' ')
+          .replace(/\s+/g,' ')
+          .trim();
+}
+
+// Does `needle` appear as a run of whole words inside `haystack`?
+function containsPhrase(haystack, needle){
+  if(!needle) return false;
+  const h = ' ' + normalizePhrase(haystack) + ' ';
+  const n = ' ' + normalizePhrase(needle)   + ' ';
+  return h.indexOf(n) !== -1;
+}
+
+// Find an existing entry that exactly matches OR contains the typed phrase
+// (or is contained by it), so "high and dry" matches "leave someone high and dry".
 async function findInSheet(word){
-  const rows = await getSheet();
-  return rows.find(r=>r.word.toLowerCase()===word.toLowerCase())||null;
+  const rows  = await getSheet();
+  const wNorm = normalizePhrase(word);
+  if(!wNorm) return null;
+
+  // 1. exact normalized match
+  let hit = rows.find(r => normalizePhrase(r.word) === wNorm);
+  if(hit) return hit;
+
+  // 2. typed phrase contained within a stored entry, or stored entry within typed phrase.
+  //    Require the SHORTER side to itself be multi-word, so a single common word
+  //    like "high" inside "high and drier" doesn't trigger a false match.
+  const isPhrase = wNorm.indexOf(' ') !== -1;
+  if(isPhrase){
+    hit = rows.find(r => {
+      const rNorm = normalizePhrase(r.word);
+      const shorter = wNorm.length <= rNorm.length ? wNorm : rNorm;
+      if(shorter.indexOf(' ') === -1) return false; // shorter side must be multi-word
+      return containsPhrase(r.word, word) || containsPhrase(word, r.word);
+    });
+    if(hit) return hit;
+  }
+  return null;
 }
 
 // ── UI helpers ──────────────────────────────────────────────────
@@ -255,7 +293,16 @@ async function validateAndGenerate(word){
   meaningEl.value=''; exampleEl.value=''; autoFilled=false;
   setStatus('Checking spelling and generating…','');
   const data = await callScript({ action:'validate', word });
-  return data; // {ok, valid, suggestion, meaning, example}
+
+  // If Claude corrected the phrase, check whether the corrected form
+  // already exists in the sheet (e.g. "high and dry" inside
+  // "leave someone high and dry"). Attach it so the caller can warn.
+  data.relatedMatch = null;
+  if(data && !data.valid && data.suggestion){
+    data.relatedMatch = await findInSheet(data.suggestion);
+  }
+  setStatus(''); // clear the "Checking…" message before the caller shows its own status/confirm
+  return data; // {ok, valid, suggestion, meaning, example, relatedMatch}
 }
 
 // ── ADD button ──────────────────────────────────────────────────
@@ -276,6 +323,13 @@ async function submitWord(){
     // New word — validate spelling first
     const result = await validateAndGenerate(word);
     fillBoxes(result.meaning, result.example);
+
+    // If the corrected phrase is already covered by an existing entry, stop here
+    if(!result.valid && result.relatedMatch){
+      fillBoxes(result.relatedMatch.meaning, result.relatedMatch.example);
+      setStatus('Already in your sheet as "'+result.relatedMatch.word+'" — nothing added.','warn');
+      setBusy(false); addBtn.textContent='Add word'; return;
+    }
 
     if(result.valid){
       // Correct spelling — confirm before saving
@@ -323,6 +377,13 @@ async function lookupWord(){
       // Not in sheet — validate then offer to add
       const result = await validateAndGenerate(word);
       fillBoxes(result.meaning, result.example);
+
+      // If the corrected phrase is already covered by an existing entry, stop here
+      if(!result.valid && result.relatedMatch){
+        fillBoxes(result.relatedMatch.meaning, result.relatedMatch.example);
+        setStatus('Already in your sheet as "'+result.relatedMatch.word+'".','ok');
+        setBusy(false); lookupBtn.textContent='Look up'; return;
+      }
 
       if(result.valid){
         showConfirm(
