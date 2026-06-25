@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1a15">
+<title>Add a Word</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1a15;
+    --bg-deep:#0a130f;
+    --surface:#1a2a22;
+    --surface-2:#16241d;
+    --surface-line:rgba(243,236,217,0.14);
+    --ink:#f4eedc;
+    --ink-soft:#9fb6aa;
+    --gold:#d8ad3d;
+    --gold-soft:#ecd791;
+    --rust:#e3835f;
+    --rust-bg:rgba(227,131,95,0.16);
+    --green:#86c08c;
+    --green-bg:rgba(134,192,140,0.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100dvh;
+    background:radial-gradient(130% 140% at 50% -10%, var(--bg), var(--bg-deep));
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+  }
+  .wrap{
+    max-width:560px;
+    margin:0 auto;
+    padding:max(22px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(2rem,7vw,2.7rem);
+    margin:6px 0 22px;
+    line-height:1.05;
+  }
+  .card{
+    background:linear-gradient(180deg, var(--surface), var(--surface-2));
+    border:1px solid var(--surface-line);
+    border-radius:16px;
+    padding:20px 18px 22px;
+    animation:rise .5s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .field{margin-bottom:16px;}
+  .field:last-of-type{margin-bottom:20px;}
+  label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    margin-bottom:7px;
+  }
+  label .opt{color:var(--ink-soft);text-transform:none;letter-spacing:0;font-size:11px;}
+  input,textarea{
+    width:100%;
+    background:var(--bg-deep);
+    border:1px solid var(--surface-line);
+    border-radius:10px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    padding:13px 14px;
+    resize:vertical;
+  }
+  input::placeholder,textarea::placeholder{color:rgba(159,182,170,0.55);}
+  input:focus,textarea:focus{
+    outline:none;
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(216,173,61,0.18);
+  }
+  textarea{min-height:62px;line-height:1.45;}
+  .add-btn{
+    width:100%;
+    background:var(--gold);
+    color:var(--bg-deep);
+    border:none;
+    border-radius:10px;
+    padding:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .add-btn:hover{background:var(--gold-soft);}
+  .add-btn:disabled{opacity:.55;cursor:default;}
+  .hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:12px;
+    text-align:center;
+    line-height:1.5;
+  }
+  .status{
+    margin-top:14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    text-align:center;
+    min-height:18px;
+    transition:opacity .2s ease;
+  }
+  .status.ok{color:var(--green);}
+  .status.err{color:var(--rust);}
+  .banner{
+    background:var(--rust-bg);
+    border:1px solid rgba(227,131,95,0.4);
+    border-radius:12px;
+    padding:13px 15px;
+    margin-bottom:20px;
+    font-size:13.5px;
+    line-height:1.5;
+    color:var(--ink);
+  }
+  .banner b{color:var(--rust);}
+  .ledger{margin-top:30px;}
+  .ledger-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:1px solid var(--surface-line);
+    padding-bottom:9px;
+    margin-bottom:6px;
+  }
+  .ledger-head .eyebrow{color:var(--ink-soft);}
+  .ledger-count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--gold-soft);
+  }
+  .ledger-empty{
+    color:var(--ink-soft);
+    font-size:14px;
+    padding:16px 2px;
+    line-height:1.5;
+  }
+  .entry{
+    padding:13px 2px;
+    border-bottom:1px solid rgba(243,236,217,0.07);
+    animation:slidein .35s ease both;
+  }
+  @keyframes slidein{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  .entry-word{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.15rem;
+    margin-bottom:2px;
+  }
+  .entry-meaning{font-size:14px;color:var(--ink-soft);line-height:1.45;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Vocabulary · Add</div>
+  <h1>Add a word</h1>
+
+
+  <div class="card">
+    <div class="field">
+      <label for="word">Word</label>
+      <input id="word" type="text" autocapitalize="none" autocomplete="off" placeholder="e.g. Serendipity">
+    </div>
+    <div class="field">
+      <label for="meaning">Meaning</label>
+      <textarea id="meaning" placeholder="e.g. Good luck in making unexpected, fortunate discoveries."></textarea>
+    </div>
+    <div class="field">
+      <label for="example">Example <span class="opt">— optional</span></label>
+      <textarea id="example" placeholder="e.g. Their meeting was pure serendipity."></textarea>
+    </div>
+    <button class="add-btn" id="addBtn">Add word</button>
+    <div class="status" id="status"></div>
+    <div class="hint">Saved straight to your sheet. It may take a minute to show up in the quiz.</div>
+  </div>
+
+  <div class="ledger">
+    <div class="ledger-head">
+      <span class="eyebrow">Added this session</span>
+      <span class="ledger-count" id="count">0</span>
+    </div>
+    <div id="ledgerBody">
+      <div class="ledger-empty" id="ledgerEmpty">Nothing added yet. Words you add will list here.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ───────────────────────────────────────────────────────────────
+// Paste your Apps Script web app URL (ends in /exec) between the quotes:
+const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbwgTH52c33lZM3KKvx19Ttuuy8PAxvm37WSbbyhbm49eTpLCy34-Sy3jsuBe2PZOSDzSA/exec';
+// ───────────────────────────────────────────────────────────────
+
+const wordEl = document.getElementById('word');
+const meaningEl = document.getElementById('meaning');
+const exampleEl = document.getElementById('example');
+const addBtn = document.getElementById('addBtn');
+const statusEl = document.getElementById('status');
+const countEl = document.getElementById('count');
+const ledgerBody = document.getElementById('ledgerBody');
+const ledgerEmpty = document.getElementById('ledgerEmpty');
+
+let added = 0;
+
+// endpoint is configured above
+
+function setStatus(msg, kind){
+  statusEl.textContent = msg;
+  statusEl.className = 'status' + (kind ? ' ' + kind : '');
+}
+
+function addToLedger(word, meaning){
+  if(ledgerEmpty) ledgerEmpty.remove();
+  const entry = document.createElement('div');
+  entry.className = 'entry';
+  const w = document.createElement('div');
+  w.className = 'entry-word';
+  w.textContent = word;
+  const m = document.createElement('div');
+  m.className = 'entry-meaning';
+  m.textContent = meaning;
+  entry.appendChild(w);
+  entry.appendChild(m);
+  ledgerBody.insertBefore(entry, ledgerBody.firstChild);
+  added++;
+  countEl.textContent = added;
+}
+
+async function submitWord(){
+  const word = wordEl.value.trim();
+  const meaning = meaningEl.value.trim();
+  const example = exampleEl.value.trim();
+
+  if(!word){ setStatus('Add a word first.', 'err'); wordEl.focus(); return; }
+  if(!meaning){ setStatus('Add a meaning first.', 'err'); meaningEl.focus(); return; }
+
+  addBtn.disabled = true;
+  addBtn.textContent = 'Adding…';
+  setStatus('');
+
+  try{
+    await fetch(ENDPOINT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ word, meaning, example })
+    });
+    addToLedger(word, meaning);
+    setStatus('Added “' + word + '.”', 'ok');
+    wordEl.value = '';
+    meaningEl.value = '';
+    exampleEl.value = '';
+    wordEl.focus();
+  }catch(err){
+    setStatus("Couldn't reach the sheet. Check your connection and try again.", 'err');
+  }finally{
+    addBtn.disabled = false;
+    addBtn.textContent = 'Add word';
+  }
+}
+
+addBtn.addEventListener('click', submitWord);
+
+// Enter in the Word box jumps to Meaning; Cmd/Ctrl+Enter submits from anywhere.
+wordEl.addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); meaningEl.focus(); }
+});
+[meaningEl, exampleEl].forEach(el=>{
+  el.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); submitWord(); }
+  });
+});
+</script>
+</body>
+</html>
