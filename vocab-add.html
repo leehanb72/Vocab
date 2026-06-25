@@ -12,175 +12,55 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0f1a15;
-    --bg-deep:#0a130f;
-    --surface:#1a2a22;
-    --surface-2:#16241d;
-    --surface-line:rgba(243,236,217,0.14);
-    --ink:#f4eedc;
-    --ink-soft:#9fb6aa;
-    --gold:#d8ad3d;
-    --gold-soft:#ecd791;
-    --rust:#e3835f;
-    --rust-bg:rgba(227,131,95,0.16);
-    --green:#86c08c;
-    --green-bg:rgba(134,192,140,0.16);
+    --bg:#0f1a15;--bg-deep:#0a130f;--surface:#1a2a22;--surface-2:#16241d;
+    --surface-line:rgba(243,236,217,0.14);--ink:#f4eedc;--ink-soft:#9fb6aa;
+    --gold:#d8ad3d;--gold-soft:#ecd791;--rust:#e3835f;--rust-bg:rgba(227,131,95,0.16);
+    --green:#86c08c;--green-bg:rgba(134,192,140,0.16);--blue:#7db8d4;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
-  body{
-    min-height:100dvh;
-    background:radial-gradient(130% 140% at 50% -10%, var(--bg), var(--bg-deep));
-    font-family:'Inter',system-ui,sans-serif;
-    color:var(--ink);
-  }
-  .wrap{
-    max-width:560px;
-    margin:0 auto;
-    padding:max(22px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-  }
-  .eyebrow{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    letter-spacing:.18em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-  }
-  h1{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:clamp(2rem,7vw,2.7rem);
-    margin:6px 0 22px;
-    line-height:1.05;
-  }
-  .card{
-    background:linear-gradient(180deg, var(--surface), var(--surface-2));
-    border:1px solid var(--surface-line);
-    border-radius:16px;
-    padding:20px 18px 22px;
-    animation:rise .5s cubic-bezier(.2,.7,.2,1) both;
-  }
+  body{min-height:100dvh;background:radial-gradient(130% 140% at 50% -10%,var(--bg),var(--bg-deep));font-family:'Inter',system-ui,sans-serif;color:var(--ink);}
+  .wrap{max-width:560px;margin:0 auto;padding:max(22px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2rem,7vw,2.7rem);margin:6px 0 22px;line-height:1.05;}
+  .card{background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--surface-line);border-radius:16px;padding:20px 18px 22px;animation:rise .5s cubic-bezier(.2,.7,.2,1) both;}
   @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
   .field{margin-bottom:16px;}
-  .field:last-of-type{margin-bottom:20px;}
-  label{
-    display:block;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:var(--gold-soft);
-    margin-bottom:7px;
-  }
+  label{display:block;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:7px;}
   label .opt{color:var(--ink-soft);text-transform:none;letter-spacing:0;font-size:11px;}
-  input,textarea{
-    width:100%;
-    background:var(--bg-deep);
-    border:1px solid var(--surface-line);
-    border-radius:10px;
-    color:var(--ink);
-    font-family:'Inter',sans-serif;
-    font-size:16px;
-    padding:13px 14px;
-    resize:vertical;
-  }
+  input,textarea{width:100%;background:var(--bg-deep);border:1px solid var(--surface-line);border-radius:10px;color:var(--ink);font-family:'Inter',sans-serif;font-size:16px;padding:13px 14px;resize:vertical;}
   input::placeholder,textarea::placeholder{color:rgba(159,182,170,0.55);}
-  input:focus,textarea:focus{
-    outline:none;
-    border-color:var(--gold);
-    box-shadow:0 0 0 3px rgba(216,173,61,0.18);
-  }
+  input:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,173,61,0.18);}
   textarea{min-height:62px;line-height:1.45;}
-  .add-btn{
-    width:100%;
-    background:var(--gold);
-    color:var(--bg-deep);
-    border:none;
-    border-radius:10px;
-    padding:16px;
-    font-family:'IBM Plex Mono',monospace;
-    font-weight:600;
-    font-size:14px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    cursor:pointer;
-    transition:background .15s ease;
-  }
-  .add-btn:hover{background:var(--gold-soft);}
-  .add-btn:disabled{opacity:.55;cursor:default;}
-  .hint{
-    font-size:12.5px;
-    color:var(--ink-soft);
-    margin-top:12px;
-    text-align:center;
-    line-height:1.5;
-  }
-  .status{
-    margin-top:14px;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:13px;
-    text-align:center;
-    min-height:18px;
-    transition:opacity .2s ease;
-  }
+  .btn-row{display:flex;gap:10px;margin-bottom:0;}
+  .btn{flex:1;border:none;border-radius:10px;padding:16px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .15s ease;}
+  .btn:disabled{opacity:.55;cursor:default;}
+  .btn-add{background:var(--gold);color:var(--bg-deep);}
+  .btn-add:hover:not(:disabled){background:var(--gold-soft);}
+  .btn-lookup{background:var(--surface);color:var(--ink);border:1px solid var(--surface-line);}
+  .btn-lookup:hover:not(:disabled){background:rgba(159,182,170,0.12);}
+  .status{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:center;min-height:18px;line-height:1.5;}
   .status.ok{color:var(--green);}
   .status.err{color:var(--rust);}
-  .banner{
-    background:var(--rust-bg);
-    border:1px solid rgba(227,131,95,0.4);
-    border-radius:12px;
-    padding:13px 15px;
-    margin-bottom:20px;
-    font-size:13.5px;
-    line-height:1.5;
-    color:var(--ink);
-  }
-  .banner b{color:var(--rust);}
+  .status.warn{color:var(--gold-soft);}
+  .status.info{color:var(--blue);}
+  .hint{font-size:12.5px;color:var(--ink-soft);margin-top:12px;text-align:center;line-height:1.5;}
   .ledger{margin-top:30px;}
-  .ledger-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    border-bottom:1px solid var(--surface-line);
-    padding-bottom:9px;
-    margin-bottom:6px;
-  }
+  .ledger-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--surface-line);padding-bottom:9px;margin-bottom:6px;}
   .ledger-head .eyebrow{color:var(--ink-soft);}
-  .ledger-count{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--gold-soft);
-  }
-  .ledger-empty{
-    color:var(--ink-soft);
-    font-size:14px;
-    padding:16px 2px;
-    line-height:1.5;
-  }
-  .entry{
-    padding:13px 2px;
-    border-bottom:1px solid rgba(243,236,217,0.07);
-    animation:slidein .35s ease both;
-  }
+  .ledger-count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold-soft);}
+  .ledger-empty{color:var(--ink-soft);font-size:14px;padding:16px 2px;line-height:1.5;}
+  .entry{padding:13px 2px;border-bottom:1px solid rgba(243,236,217,0.07);animation:slidein .35s ease both;}
   @keyframes slidein{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
-  .entry-word{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:1.15rem;
-    margin-bottom:2px;
-  }
+  .entry-word{font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin-bottom:2px;}
   .entry-meaning{font-size:14px;color:var(--ink-soft);line-height:1.45;}
-  @media (prefers-reduced-motion: reduce){
-    *{animation:none !important;}
-  }
+  @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="eyebrow">Vocabulary · Add</div>
   <h1>Add a word</h1>
-
-
   <div class="card">
     <div class="field">
       <label for="word">Word</label>
@@ -190,13 +70,16 @@
       <label for="meaning">Meaning <span class="opt">— auto-generated if blank</span></label>
       <textarea id="meaning" placeholder="e.g. Good luck in making unexpected, fortunate discoveries."></textarea>
     </div>
-    <div class="field">
+    <div class="field" style="margin-bottom:20px;">
       <label for="example">Example <span class="opt">— auto-generated if blank</span></label>
       <textarea id="example" placeholder="e.g. Their meeting was pure serendipity."></textarea>
     </div>
-    <button class="add-btn" id="addBtn">Add word</button>
+    <div class="btn-row">
+      <button class="btn btn-lookup" id="lookupBtn">Look up</button>
+      <button class="btn btn-add" id="addBtn">Add word</button>
+    </div>
     <div class="status" id="status"></div>
-    <div class="hint">Only the word is required. Blank meaning and/or example will be auto-generated by Claude.</div>
+    <div class="hint">Only the word is required. Blank fields are auto-generated by Claude when adding.</div>
   </div>
 
   <div class="ledger">
@@ -205,93 +88,173 @@
       <span class="ledger-count" id="count">0</span>
     </div>
     <div id="ledgerBody">
-      <div class="ledger-empty" id="ledgerEmpty">Nothing added yet. Words you add will list here.</div>
+      <div class="ledger-empty" id="ledgerEmpty">Nothing added yet. Words you add will appear here.</div>
     </div>
   </div>
 </div>
 
 <script>
-// ───────────────────────────────────────────────────────────────
-// Paste your Apps Script web app URL (ends in /exec) between the quotes:
 const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbwgTH52c33lZM3KKvx19Ttuuy8PAxvm37WSbbyhbm49eTpLCy34-Sy3jsuBe2PZOSDzSA/exec';
-// ───────────────────────────────────────────────────────────────
+const SHEET_CSV   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSULPIxbDX4y9FHYQyQTgRKuxkdrcXvTdb3zDCDkIY3AUXD07SrF5VGwMTBBl2NOJkMwjAT0fDo_k1L/pub?gid=0&single=true&output=csv';
 
-const wordEl = document.getElementById('word');
+const wordEl    = document.getElementById('word');
 const meaningEl = document.getElementById('meaning');
 const exampleEl = document.getElementById('example');
-const addBtn = document.getElementById('addBtn');
-const statusEl = document.getElementById('status');
-const countEl = document.getElementById('count');
-const ledgerBody = document.getElementById('ledgerBody');
-const ledgerEmpty = document.getElementById('ledgerEmpty');
+const addBtn    = document.getElementById('addBtn');
+const lookupBtn = document.getElementById('lookupBtn');
+const statusEl  = document.getElementById('status');
+const countEl   = document.getElementById('count');
+const ledgerBody= document.getElementById('ledgerBody');
+let   ledgerEmpty = document.getElementById('ledgerEmpty');
+let   added = 0;
+let   sheetCache = null; // cached parsed rows
 
-let added = 0;
-
-// endpoint is configured above
-
-function setStatus(msg, kind){
-  statusEl.textContent = msg;
-  statusEl.className = 'status' + (kind ? ' ' + kind : '');
+// ── CSV parser ──────────────────────────────────────────────────
+function parseCSV(text){
+  const rows=[];let row=[],field='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i],n=text[i+1];
+    if(inQ){if(c==='"'&&n==='"'){field+='"';i++;}else if(c==='"'){inQ=false;}else{field+=c;}}
+    else{if(c==='"'){inQ=true;}else if(c===','){row.push(field);field='';}
+    else if(c==='\r'){}else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+    else{field+=c;}}
+  }
+  if(field||row.length){row.push(field);rows.push(row);}
+  return rows;
 }
 
-function addToLedger(word, meaning){
-  if(ledgerEmpty) ledgerEmpty.remove();
-  const entry = document.createElement('div');
-  entry.className = 'entry';
-  const w = document.createElement('div');
-  w.className = 'entry-word';
-  w.textContent = word;
-  const m = document.createElement('div');
-  m.className = 'entry-meaning';
-  m.textContent = meaning;
-  entry.appendChild(w);
-  entry.appendChild(m);
-  ledgerBody.insertBefore(entry, ledgerBody.firstChild);
-  added++;
-  countEl.textContent = added;
+// ── Fetch & cache the sheet ─────────────────────────────────────
+async function getSheet(){
+  if(sheetCache) return sheetCache;
+  const res  = await fetch(SHEET_CSV);
+  const text = await res.text();
+  let rows   = parseCSV(text).filter(r=>r.length>=1&&r[0].trim());
+  // skip header row if present
+  if(rows[0]&&rows[0][0].toLowerCase().trim()==='word') rows=rows.slice(1);
+  sheetCache = rows.map(r=>({
+    word:   (r[0]||'').trim(),
+    meaning:(r[1]||'').trim(),
+    example:(r[2]||'').trim()
+  }));
+  return sheetCache;
 }
 
+// ── Find a word in cached sheet (case-insensitive) ──────────────
+async function findInSheet(word){
+  const rows = await getSheet();
+  return rows.find(r=>r.word.toLowerCase()===word.toLowerCase()) || null;
+}
+
+// ── UI helpers ──────────────────────────────────────────────────
+function setStatus(msg,kind){
+  statusEl.textContent=msg;
+  statusEl.className='status'+(kind?' '+kind:'');
+}
+function setBusy(busy){
+  addBtn.disabled=busy;
+  lookupBtn.disabled=busy;
+}
+function fillFields(entry){
+  meaningEl.value=entry.meaning;
+  exampleEl.value=entry.example;
+}
+function clearFields(){
+  wordEl.value='';meaningEl.value='';exampleEl.value='';wordEl.focus();
+}
+function addToLedger(word,meaning){
+  if(ledgerEmpty){ledgerEmpty.remove();ledgerEmpty=null;}
+  const e=document.createElement('div');e.className='entry';
+  const w=document.createElement('div');w.className='entry-word';w.textContent=word;
+  const m=document.createElement('div');m.className='entry-meaning';m.textContent=meaning||'(meaning auto-generated)';
+  e.appendChild(w);e.appendChild(m);
+  ledgerBody.insertBefore(e,ledgerBody.firstChild);
+  added++;countEl.textContent=added;
+}
+
+// ── Post to Apps Script ─────────────────────────────────────────
+async function postWord(word,meaning,example){
+  await fetch(ENDPOINT_URL,{
+    method:'POST',mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({word,meaning,example})
+  });
+  // invalidate cache so next lookup picks up the new row
+  sheetCache=null;
+}
+
+// ── ADD button ──────────────────────────────────────────────────
 async function submitWord(){
-  const word = wordEl.value.trim();
+  const word    = wordEl.value.trim();
   const meaning = meaningEl.value.trim();
   const example = exampleEl.value.trim();
+  if(!word){setStatus('Enter a word first.','err');wordEl.focus();return;}
 
-  if(!word){ setStatus('Add a word first.', 'err'); wordEl.focus(); return; }
-
-  addBtn.disabled = true;
-  addBtn.textContent = 'Adding…';
+  setBusy(true);
+  addBtn.textContent='Checking…';
   setStatus('');
 
   try{
-    await fetch(ENDPOINT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ word, meaning, example })
-    });
-    addToLedger(word, meaning);
-    setStatus('Added “' + word + '.”', 'ok');
-    wordEl.value = '';
-    meaningEl.value = '';
-    exampleEl.value = '';
-    wordEl.focus();
+    const existing = await findInSheet(word);
+    if(existing){
+      fillFields(existing);
+      setStatus('"'+word+'" is already in your sheet — meaning and example filled above.','warn');
+      addBtn.textContent='Add word';
+      setBusy(false);
+      return;
+    }
+    addBtn.textContent='Adding…';
+    await postWord(word,meaning,example);
+    addToLedger(word,meaning);
+    setStatus('"'+word+'" added to your sheet.','ok');
+    clearFields();
   }catch(err){
-    setStatus("Couldn't reach the sheet. Check your connection and try again.", 'err');
+    setStatus("Couldn't reach the sheet. Check your connection.",'err');
   }finally{
-    addBtn.disabled = false;
-    addBtn.textContent = 'Add word';
+    addBtn.textContent='Add word';
+    setBusy(false);
   }
 }
 
-addBtn.addEventListener('click', submitWord);
+// ── LOOK UP button ──────────────────────────────────────────────
+async function lookupWord(){
+  const word = wordEl.value.trim();
+  if(!word){setStatus('Enter a word to look up.','err');wordEl.focus();return;}
 
-// Enter in the Word box jumps to Meaning; Cmd/Ctrl+Enter submits from anywhere.
-wordEl.addEventListener('keydown', e=>{
-  if(e.key === 'Enter'){ e.preventDefault(); meaningEl.focus(); }
+  setBusy(true);
+  lookupBtn.textContent='Looking…';
+  setStatus('');
+
+  try{
+    const existing = await findInSheet(word);
+    if(existing){
+      fillFields(existing);
+      setStatus('Found "'+word+'" in your sheet.','ok');
+    }else{
+      const meaning = meaningEl.value.trim();
+      const example = exampleEl.value.trim();
+      lookupBtn.textContent='Adding…';
+      await postWord(word,meaning,example);
+      addToLedger(word,meaning);
+      setStatus('"'+word+'" isn\'t in your sheet yet — adding it now.','info');
+      clearFields();
+    }
+  }catch(err){
+    setStatus("Couldn't reach the sheet. Check your connection.",'err');
+  }finally{
+    lookupBtn.textContent='Look up';
+    setBusy(false);
+  }
+}
+
+addBtn.addEventListener('click',submitWord);
+lookupBtn.addEventListener('click',lookupWord);
+
+wordEl.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();meaningEl.focus();}
 });
-[meaningEl, exampleEl].forEach(el=>{
-  el.addEventListener('keydown', e=>{
-    if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); submitWord(); }
+[meaningEl,exampleEl].forEach(el=>{
+  el.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();submitWord();}
   });
 });
 </script>
