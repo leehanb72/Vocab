@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0f1a15">
 <title>Add a Word</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0f1a15;--bg-deep:#0a130f;--surface:#1a2a22;--surface-2:#16241d;
@@ -283,7 +283,11 @@ async function callScript(payload){
 
 async function saveToSheet(word, meaning, example){
   await callScript({ action:'add', word, meaning, example });
-  sheetCache = null; // invalidate cache
+  // Keep the in-memory cache fresh by appending, rather than forcing a full
+  // re-download of the whole word list on the next action.
+  if(sheetCache){
+    sheetCache.push({ word:word.trim(), meaning:(meaning||'').trim(), example:(example||'').trim() });
+  }
   addToLedger(word, meaning);
 }
 
@@ -426,6 +430,10 @@ wordEl.addEventListener('keydown', e=>{
     if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); submitWord(); }
   });
 });
+
+// Warm the word-list cache in the background as soon as the page loads,
+// so the first Look up / Add isn't waiting on the full download.
+getSheet().catch(()=>{ /* will retry on first real use */ });
 </script>
 </body>
 </html>
