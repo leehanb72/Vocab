@@ -45,10 +45,11 @@
   .navbar{
     display:flex;
     justify-content:space-between;
-    align-items:baseline;
+    align-items:center;
     margin-bottom:10px;
     flex:none;
   }
+  #navTitle{flex:1;text-align:center;}
   .eyebrow{
     font-family:'IBM Plex Mono',monospace;
     font-size:12px;
@@ -86,17 +87,20 @@
     font-family:'IBM Plex Mono',monospace;
     font-size:12px;
     color:var(--ink-soft);
-    margin-bottom:18px;
+    margin-bottom:12px;
     flex:none;
   }
   .stage{
     flex:1;
     min-height:0;
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:center;
     overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
+  /* Home, loading and end screens should still center vertically */
+  #homeShell, #loadingShell, #endShell{align-items:center;}
   .hidden{display:none !important;}
   .quiz-card{
     width:100%;
@@ -279,6 +283,108 @@
     margin-bottom:28px;
   }
 
+  /* Home button in navbar */
+  .home-btn{
+    background:var(--surface);
+    color:var(--ink);
+    border:1px solid var(--surface-line);
+    border-radius:9px;
+    padding:8px 13px;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    cursor:pointer;
+    margin-right:12px;
+  }
+  .home-btn:hover{background:var(--bg);color:var(--gold-soft);}
+  .home-btn.hidden{display:none !important;}
+
+  /* Home screen */
+  .home-card{text-align:center;}
+  .home-title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(1.8rem,6vw,2.6rem);
+    margin:6px 0 8px;
+    line-height:1.1;
+  }
+  .home-sub{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin-bottom:26px;
+  }
+  .home-choices{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    max-width:420px;
+    margin:0 auto;
+  }
+  .home-choice{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    text-align:left;
+    background:var(--surface);
+    border:1px solid var(--surface-line);
+    border-radius:13px;
+    padding:18px 20px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .home-choice:hover{border-color:var(--gold);background:rgba(216,173,61,0.08);}
+  .home-choice:disabled{opacity:.5;cursor:default;}
+  .home-choice-title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.3rem;
+    color:var(--gold-soft);
+  }
+  .home-choice-desc{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.04em;
+    color:var(--ink-soft);
+  }
+
+  /* Review screen */
+  .review-block{margin-bottom:4px;}
+  .review-meaning{
+    font-size:18px;
+    line-height:1.5;
+    color:var(--ink);
+  }
+
+  /* Compact tuning for phones (e.g. iPhone 15 Pro, 393px wide) */
+  @media (orientation: portrait) and (max-width: 460px){
+    .quiz-card{gap:18px;}
+    .word{font-size:clamp(2rem,8.5vw,2.9rem);}
+    .badge{margin-bottom:10px;}
+    .prompt{margin-bottom:8px;}
+    .options{gap:10px;}
+    .opt{padding:13px 14px;font-size:16px;line-height:1.4;border-radius:9px;}
+    .opt .letter{width:22px;height:22px;font-size:12px;}
+    .example{padding:13px 15px;}
+    .example-text{font-size:15.5px;}
+    .review-meaning{font-size:16px;}
+    .action-bar{padding-top:10px;}
+    .next-btn{padding:14px;font-size:13px;}
+    .counter{margin-bottom:8px;}
+    .home-choice{padding:16px 18px;}
+    .home-choice-title{font-size:1.2rem;}
+    .home-title{margin-bottom:6px;}
+    .home-sub{margin-bottom:20px;}
+  }
+  /* Very short viewports — trim further so nothing clips */
+  @media (orientation: portrait) and (max-height: 740px){
+    .quiz-card{gap:14px;}
+    .word{font-size:clamp(1.8rem,7.5vw,2.5rem);}
+    .opt{padding:11px 13px;}
+    .example{padding:11px 14px;}
+  }
+
   /* Landscape layout */
   @media (orientation: landscape){
     .app{padding-top:max(12px, env(safe-area-inset-top));padding-bottom:max(12px, env(safe-area-inset-bottom));}
@@ -316,17 +422,58 @@
 <body>
 <div class="app">
   <div class="navbar">
-    <div class="eyebrow">Vocabulary Review</div>
-    <div class="score">SCORE <b id="scoreNum">0</b>/<span id="scoreTotal">0</span></div>
+    <button class="home-btn hidden" id="homeBtn">⌂ Home</button>
+    <div class="eyebrow" id="navTitle">Vocabulary</div>
+    <div class="score" id="scoreWrap">SCORE <b id="scoreNum">0</b>/<span id="scoreTotal">0</span></div>
   </div>
   <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
   <div class="counter" id="counterLabel">Card 1 of 21</div>
 
-  <div class="stage" id="loadingShell">
+  <div class="stage hidden" id="loadingShell">
     <div class="quiz-card end-card">
       <div>
         <div class="end-eyebrow">Loading words</div>
         <div class="end-remark" id="loadingText">Pulling the latest list from your Google Sheet…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage hidden" id="homeShell">
+    <div class="quiz-card end-card home-card">
+      <div>
+        <div class="end-eyebrow">Vocabulary</div>
+        <div class="home-title">What would you like to do?</div>
+        <div class="home-sub" id="homeSub">Loading your word list…</div>
+        <div class="home-choices">
+          <button class="home-choice" id="goFlashcards">
+            <span class="home-choice-title">Flashcard Quiz</span>
+            <span class="home-choice-desc">Multiple-choice, 10 words a round</span>
+          </button>
+          <button class="home-choice" id="goReview">
+            <span class="home-choice-title">Review Words</span>
+            <span class="home-choice-desc">See word, meaning &amp; example</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage hidden" id="reviewShell">
+    <div class="quiz-card" id="reviewCard">
+      <div class="word-pane">
+        <div class="badge">Review</div>
+        <div class="prompt">Word</div>
+        <div class="word" id="reviewWord">word</div>
+      </div>
+      <div class="options-pane">
+        <div class="review-block">
+          <div class="example-label">Meaning</div>
+          <div class="review-meaning" id="reviewMeaning"></div>
+        </div>
+        <div class="example show" id="reviewExampleBlock">
+          <div class="example-label">Example</div>
+          <div class="example-text" id="reviewExample"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -365,6 +512,10 @@
       <button class="next-btn hidden" id="nextBtn">Next word →</button>
     </div>
     <button class="next-btn hidden" id="restartBtn">Play again →</button>
+    <div class="nav-row" id="reviewNav">
+      <button class="back-btn hidden" id="reviewBackBtn" aria-label="Previous word">←</button>
+      <button class="next-btn hidden" id="reviewNextBtn">Next word →</button>
+    </div>
   </div>
 </div>
 
@@ -486,8 +637,7 @@ function buildDeck(){
   idx = 0;
   score = 0;
   document.getElementById('scoreTotal').textContent = deck.length;
-  document.getElementById('endShell').classList.add('hidden');
-  document.getElementById('quizShell').classList.remove('hidden');
+  showOnly('quizShell');
   document.getElementById('restartBtn').classList.add('hidden');
   renderCard();
 }
@@ -569,8 +719,7 @@ document.getElementById('backBtn').addEventListener('click', ()=>{
 
 function showEnd(){
   document.getElementById('progressFill').style.width = '100%';
-  document.getElementById('quizShell').classList.add('hidden');
-  document.getElementById('endShell').classList.remove('hidden');
+  showOnly('endShell');
   document.getElementById('nextBtn').classList.add('hidden');
   document.getElementById('backBtn').classList.add('hidden');
   document.getElementById('restartBtn').classList.remove('hidden');
@@ -586,14 +735,113 @@ function showEnd(){
 
 document.getElementById('restartBtn').addEventListener('click', buildDeck);
 
-async function init(){
-  const success = await loadWords();
-  document.getElementById('loadingShell').classList.add('hidden');
-  document.getElementById('quizShell').classList.remove('hidden');
-  if(!success){
-    document.getElementById('loadingText').textContent = 'Could not load the live list — using the built-in backup words.';
-  }
+/* ---------- Screen management ---------- */
+const SHELLS = ['loadingShell','homeShell','quizShell','reviewShell','endShell'];
+function showOnly(id){
+  SHELLS.forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+function hideAllActionButtons(){
+  ['backBtn','nextBtn','restartBtn','reviewBackBtn','reviewNextBtn'].forEach(b=>{
+    document.getElementById(b).classList.add('hidden');
+  });
+}
+
+function goHome(){
+  hideAllActionButtons();
+  showOnly('homeShell');
+  document.getElementById('homeBtn').classList.add('hidden');
+  document.getElementById('navTitle').textContent = 'Vocabulary';
+  document.getElementById('scoreWrap').style.visibility = 'hidden';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('counterLabel').textContent = '';
+}
+
+function startFlashcards(){
+  document.getElementById('homeBtn').classList.remove('hidden');
+  document.getElementById('navTitle').textContent = 'Flashcard Quiz';
+  document.getElementById('scoreWrap').style.visibility = 'visible';
+  hideAllActionButtons();
   buildDeck();
+}
+
+/* ---------- Review mode ---------- */
+let reviewBag = [];
+let reviewHistory = [];   // indices of WORDS shown, in order
+let reviewPos = -1;       // pointer into reviewHistory
+
+function drawReviewWord(){
+  if(reviewBag.length === 0){
+    reviewBag = shuffle(WORDS.map((_,i)=>i));
+  }
+  return reviewBag.shift();
+}
+
+function startReview(){
+  document.getElementById('homeBtn').classList.remove('hidden');
+  document.getElementById('navTitle').textContent = 'Review Words';
+  document.getElementById('scoreWrap').style.visibility = 'hidden';
+  hideAllActionButtons();
+  reviewHistory = [];
+  reviewPos = -1;
+  showOnly('reviewShell');
+  document.getElementById('reviewBackBtn').classList.remove('hidden');
+  document.getElementById('reviewNextBtn').classList.remove('hidden');
+  nextReviewWord();
+}
+
+function renderReview(){
+  const item = WORDS[reviewHistory[reviewPos]];
+  const card = document.getElementById('reviewCard');
+  card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+  document.getElementById('reviewWord').textContent = item.w;
+  document.getElementById('reviewMeaning').textContent = item.c;
+  const exBlock = document.getElementById('reviewExampleBlock');
+  if(item.ex){
+    document.getElementById('reviewExample').textContent = item.ex;
+    exBlock.style.display = '';
+  } else {
+    exBlock.style.display = 'none';
+  }
+  document.getElementById('counterLabel').textContent = `Word ${reviewPos+1}`;
+  document.getElementById('reviewBackBtn').classList.toggle('hidden', reviewPos === 0);
+}
+
+function nextReviewWord(){
+  // if we've gone back and there's forward history, reuse it; else draw a new one
+  if(reviewPos < reviewHistory.length - 1){
+    reviewPos++;
+  } else {
+    reviewHistory.push(drawReviewWord());
+    reviewPos = reviewHistory.length - 1;
+  }
+  renderReview();
+}
+
+function prevReviewWord(){
+  if(reviewPos > 0){
+    reviewPos--;
+    renderReview();
+  }
+}
+
+document.getElementById('reviewNextBtn').addEventListener('click', nextReviewWord);
+document.getElementById('reviewBackBtn').addEventListener('click', prevReviewWord);
+
+/* ---------- Home wiring ---------- */
+document.getElementById('homeBtn').addEventListener('click', goHome);
+document.getElementById('goFlashcards').addEventListener('click', startFlashcards);
+document.getElementById('goReview').addEventListener('click', startReview);
+
+async function init(){
+  showOnly('loadingShell');
+  document.getElementById('scoreWrap').style.visibility = 'hidden';
+  const success = await loadWords();
+  document.getElementById('homeSub').textContent = success
+    ? `${WORDS.length} words ready.`
+    : 'Using the built-in backup list (couldn’t reach your sheet).';
+  goHome();
 }
 init();
 </script>
