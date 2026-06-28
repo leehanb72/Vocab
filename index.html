@@ -50,6 +50,30 @@
     flex:none;
   }
   #navTitle{flex:1;text-align:center;}
+  .nav-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .mark-btn{
+    background:var(--surface);
+    color:var(--ink-soft);
+    border:1px solid var(--surface-line);
+    border-radius:9px;
+    width:38px;height:34px;
+    font-size:18px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:color .15s, border-color .15s, background .15s;
+  }
+  .mark-btn:hover{color:var(--gold-soft);}
+  .mark-btn.marked{
+    color:var(--gold);
+    border-color:var(--gold);
+    background:rgba(216,173,61,0.12);
+  }
+  .mark-btn.hidden{display:none !important;}
   .eyebrow{
     font-family:'IBM Plex Mono',monospace;
     font-size:12px;
@@ -424,7 +448,10 @@
   <div class="navbar">
     <button class="home-btn hidden" id="homeBtn">⌂ Home</button>
     <div class="eyebrow" id="navTitle">Vocabulary</div>
-    <div class="score" id="scoreWrap">SCORE <b id="scoreNum">0</b>/<span id="scoreTotal">0</span></div>
+    <div class="nav-right">
+      <button class="mark-btn hidden" id="markBtn" aria-label="Mark this word">☆</button>
+      <div class="score" id="scoreWrap">SCORE <b id="scoreNum">0</b>/<span id="scoreTotal">0</span></div>
+    </div>
   </div>
   <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
   <div class="counter" id="counterLabel">Card 1 of 21</div>
@@ -521,6 +548,8 @@
 
 <script>
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSULPIxbDX4y9FHYQyQTgRKuxkdrcXvTdb3zDCDkIY3AUXD07SrF5VGwMTBBl2NOJkMwjAT0fDo_k1L/pub?gid=0&single=true&output=csv';
+const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbwgTH52c33lZM3KKvx19Ttuuy8PAxvm37WSbbyhbm49eTpLCy34-Sy3jsuBe2PZOSDzSA/exec';
+const MARK_WEIGHT = 4; // marked words are this many times as likely to be drawn
 
 // Used only if the live fetch fails (e.g. offline, or sharing permissions change).
 const FALLBACK_WORDS = [
@@ -576,7 +605,7 @@ function parseWordsCSV(text){
     rows = rows.slice(1);
   }
   return rows
-    .map(r => ({ w: (r[0]||'').trim(), c: (r[1]||'').trim(), ex: (r[2]||'').trim() }))
+    .map(r => ({ w: (r[0]||'').trim(), c: (r[1]||'').trim(), ex: (r[2]||'').trim(), marked: !!((r[3]||'').trim()) }))
     .filter(x => x.w && x.c);
 }
 
@@ -601,16 +630,28 @@ let idx = 0;
 let score = 0;
 let bag = [];
 
+function weightedIndices(){
+  const arr = [];
+  for(let i=0;i<WORDS.length;i++){
+    arr.push(i);
+    if(WORDS[i].marked){
+      for(let k=1;k<MARK_WEIGHT;k++) arr.push(i);
+    }
+  }
+  return arr;
+}
+
 function drawTen(){
   const drawn = [];
-  while(drawn.length < 10){
+  let guard = 0;
+  while(drawn.length < 10 && guard < 5000){
+    guard++;
     if(bag.length === 0){
-      bag = shuffle(WORDS.map((_,i)=>i));
+      bag = shuffle(weightedIndices());
     }
     const candidate = bag.shift();
     if(drawn.includes(candidate)){
-      bag.push(candidate);
-      continue;
+      continue; // weighted duplicate already chosen this round; skip
     }
     drawn.push(candidate);
   }
@@ -654,6 +695,8 @@ function renderCard(){
   card.style.animation = '';
 
   document.getElementById('wordDisplay').textContent = item.word;
+  currentWordStr = item.word;
+  updateMarkBtn();
   document.getElementById('feedbackLine').classList.remove('show');
   document.getElementById('exampleBlock').classList.remove('show');
   document.getElementById('nextBtn').classList.add('hidden');
@@ -720,6 +763,8 @@ document.getElementById('backBtn').addEventListener('click', ()=>{
 function showEnd(){
   document.getElementById('progressFill').style.width = '100%';
   showOnly('endShell');
+  document.getElementById('markBtn').classList.add('hidden');
+  currentWordStr = null;
   document.getElementById('nextBtn').classList.add('hidden');
   document.getElementById('backBtn').classList.add('hidden');
   document.getElementById('restartBtn').classList.remove('hidden');
@@ -742,6 +787,33 @@ function showOnly(id){
     document.getElementById(s).classList.toggle('hidden', s !== id);
   });
 }
+
+/* ---------- Mark word ---------- */
+let currentWordStr = null;
+function isMarked(w){ return WORDS.some(x => x.w === w && x.marked); }
+function updateMarkBtn(){
+  const b = document.getElementById('markBtn');
+  if(!currentWordStr){ b.classList.add('hidden'); return; }
+  b.classList.remove('hidden');
+  const m = isMarked(currentWordStr);
+  b.textContent = m ? '★' : '☆';
+  b.classList.toggle('marked', m);
+}
+function toggleMark(){
+  if(!currentWordStr) return;
+  const willMark = !isMarked(currentWordStr);
+  WORDS.forEach(x=>{ if(x.w === currentWordStr) x.marked = willMark; });
+  updateMarkBtn();
+  // persist to the sheet (fire-and-forget)
+  try{
+    fetch(ENDPOINT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'mark', word: currentWordStr, marked: willMark })
+    });
+  }catch(e){ /* offline: local mark still applies this session */ }
+}
+document.getElementById('markBtn').addEventListener('click', toggleMark);
 function hideAllActionButtons(){
   ['backBtn','nextBtn','restartBtn','reviewBackBtn','reviewNextBtn'].forEach(b=>{
     document.getElementById(b).classList.add('hidden');
@@ -752,6 +824,8 @@ function goHome(){
   hideAllActionButtons();
   showOnly('homeShell');
   document.getElementById('homeBtn').classList.add('hidden');
+  document.getElementById('markBtn').classList.add('hidden');
+  currentWordStr = null;
   document.getElementById('navTitle').textContent = 'Vocabulary';
   document.getElementById('scoreWrap').style.visibility = 'hidden';
   document.getElementById('progressFill').style.width = '0%';
@@ -770,12 +844,20 @@ function startFlashcards(){
 let reviewBag = [];
 let reviewHistory = [];   // indices of WORDS shown, in order
 let reviewPos = -1;       // pointer into reviewHistory
+let lastReviewIdx = -1;
 
 function drawReviewWord(){
   if(reviewBag.length === 0){
-    reviewBag = shuffle(WORDS.map((_,i)=>i));
+    reviewBag = shuffle(weightedIndices());
   }
-  return reviewBag.shift();
+  let candidate = reviewBag.shift();
+  // avoid showing the exact same word twice in a row when possible
+  if(candidate === lastReviewIdx && reviewBag.length){
+    reviewBag.push(candidate);
+    candidate = reviewBag.shift();
+  }
+  lastReviewIdx = candidate;
+  return candidate;
 }
 
 function startReview(){
@@ -796,6 +878,8 @@ function renderReview(){
   const card = document.getElementById('reviewCard');
   card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
   document.getElementById('reviewWord').textContent = item.w;
+  currentWordStr = item.w;
+  updateMarkBtn();
   document.getElementById('reviewMeaning').textContent = item.c;
   const exBlock = document.getElementById('reviewExampleBlock');
   if(item.ex){
