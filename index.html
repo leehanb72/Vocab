@@ -480,6 +480,10 @@
             <span class="home-choice-title">Review Words</span>
             <span class="home-choice-desc">See word, meaning &amp; example</span>
           </button>
+          <button class="home-choice" id="goReviewMarked">
+            <span class="home-choice-title">Review Marked Words</span>
+            <span class="home-choice-desc">Only the words you've starred</span>
+          </button>
         </div>
       </div>
     </div>
@@ -549,7 +553,6 @@
 <script>
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSULPIxbDX4y9FHYQyQTgRKuxkdrcXvTdb3zDCDkIY3AUXD07SrF5VGwMTBBl2NOJkMwjAT0fDo_k1L/pub?gid=0&single=true&output=csv';
 const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbwgTH52c33lZM3KKvx19Ttuuy8PAxvm37WSbbyhbm49eTpLCy34-Sy3jsuBe2PZOSDzSA/exec';
-const MARK_WEIGHT = 4; // marked words are this many times as likely to be drawn
 
 // Used only if the live fetch fails (e.g. offline, or sharing permissions change).
 const FALLBACK_WORDS = [
@@ -630,28 +633,17 @@ let idx = 0;
 let score = 0;
 let bag = [];
 
-function weightedIndices(){
-  const arr = [];
-  for(let i=0;i<WORDS.length;i++){
-    arr.push(i);
-    if(WORDS[i].marked){
-      for(let k=1;k<MARK_WEIGHT;k++) arr.push(i);
-    }
-  }
-  return arr;
-}
-
 function drawTen(){
   const drawn = [];
   let guard = 0;
   while(drawn.length < 10 && guard < 5000){
     guard++;
     if(bag.length === 0){
-      bag = shuffle(weightedIndices());
+      bag = shuffle(WORDS.map((_,i)=>i));
     }
     const candidate = bag.shift();
     if(drawn.includes(candidate)){
-      continue; // weighted duplicate already chosen this round; skip
+      continue;
     }
     drawn.push(candidate);
   }
@@ -790,6 +782,7 @@ function showOnly(id){
 
 /* ---------- Mark word ---------- */
 let currentWordStr = null;
+let defaultHomeSub = '';
 function isMarked(w){ return WORDS.some(x => x.w === w && x.marked); }
 function updateMarkBtn(){
   const b = document.getElementById('markBtn');
@@ -827,6 +820,7 @@ function goHome(){
   document.getElementById('markBtn').classList.add('hidden');
   currentWordStr = null;
   document.getElementById('navTitle').textContent = 'Vocabulary';
+  if(defaultHomeSub) document.getElementById('homeSub').textContent = defaultHomeSub;
   document.getElementById('scoreWrap').style.visibility = 'hidden';
   document.getElementById('progressFill').style.width = '0%';
   document.getElementById('counterLabel').textContent = '';
@@ -841,6 +835,7 @@ function startFlashcards(){
 }
 
 /* ---------- Review mode ---------- */
+let reviewPool = [];      // indices eligible in the current review session
 let reviewBag = [];
 let reviewHistory = [];   // indices of WORDS shown, in order
 let reviewPos = -1;       // pointer into reviewHistory
@@ -848,7 +843,7 @@ let lastReviewIdx = -1;
 
 function drawReviewWord(){
   if(reviewBag.length === 0){
-    reviewBag = shuffle(weightedIndices());
+    reviewBag = shuffle(reviewPool.slice());
   }
   let candidate = reviewBag.shift();
   // avoid showing the exact same word twice in a row when possible
@@ -860,17 +855,35 @@ function drawReviewWord(){
   return candidate;
 }
 
-function startReview(){
+function beginReviewSession(title, pool){
   document.getElementById('homeBtn').classList.remove('hidden');
-  document.getElementById('navTitle').textContent = 'Review Words';
+  document.getElementById('navTitle').textContent = title;
   document.getElementById('scoreWrap').style.visibility = 'hidden';
   hideAllActionButtons();
+  reviewPool = pool;
+  reviewBag = [];
   reviewHistory = [];
   reviewPos = -1;
+  lastReviewIdx = -1;
   showOnly('reviewShell');
   document.getElementById('reviewBackBtn').classList.remove('hidden');
   document.getElementById('reviewNextBtn').classList.remove('hidden');
   nextReviewWord();
+}
+
+function startReview(){
+  beginReviewSession('Review Words', WORDS.map((_,i)=>i));
+}
+
+function startReviewMarked(){
+  const marked = [];
+  WORDS.forEach((w,i)=>{ if(w.marked) marked.push(i); });
+  if(marked.length === 0){
+    document.getElementById('homeSub').textContent =
+      'No marked words yet — tap the ☆ on a word to star it first.';
+    return;
+  }
+  beginReviewSession('Marked Words', marked);
 }
 
 function renderReview(){
@@ -917,6 +930,7 @@ document.getElementById('reviewBackBtn').addEventListener('click', prevReviewWor
 document.getElementById('homeBtn').addEventListener('click', goHome);
 document.getElementById('goFlashcards').addEventListener('click', startFlashcards);
 document.getElementById('goReview').addEventListener('click', startReview);
+document.getElementById('goReviewMarked').addEventListener('click', startReviewMarked);
 
 async function init(){
   showOnly('loadingShell');
@@ -925,6 +939,7 @@ async function init(){
   document.getElementById('homeSub').textContent = success
     ? `${WORDS.length} words ready.`
     : 'Using the built-in backup list (couldn’t reach your sheet).';
+  defaultHomeSub = document.getElementById('homeSub').textContent;
   goHome();
 }
 init();
