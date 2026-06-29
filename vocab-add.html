@@ -22,6 +22,9 @@
   body{min-height:100dvh;background:radial-gradient(130% 140% at 50% -10%,var(--bg),var(--bg-deep));font-family:'Inter',system-ui,sans-serif;color:var(--ink);}
   .wrap{max-width:560px;margin:0 auto;padding:max(22px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px;}
+  .home-link{display:inline-flex;align-items:center;background:var(--surface);color:var(--ink);border:1px solid var(--surface-line);border-radius:9px;padding:8px 13px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;}
+  .home-link:hover{background:var(--bg-deep);color:var(--gold-soft);}
   h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2rem,7vw,2.7rem);margin:6px 0 22px;line-height:1.05;}
   .card{background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--surface-line);border-radius:16px;padding:20px 18px 22px;animation:rise .5s cubic-bezier(.2,.7,.2,1) both;}
   @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
@@ -84,7 +87,10 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Vocabulary · Add</div>
+  <div class="topbar">
+    <a class="home-link" href="index.html">⌂ Home</a>
+    <div class="eyebrow">Vocabulary · Add</div>
+  </div>
   <h1>Add a word</h1>
   <div class="card">
     <div class="field">
