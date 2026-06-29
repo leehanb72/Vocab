@@ -484,6 +484,10 @@
             <span class="home-choice-title">Review Marked Words</span>
             <span class="home-choice-desc">Only the words you've starred</span>
           </button>
+          <button class="home-choice" id="goAddWords">
+            <span class="home-choice-title">Add New Words</span>
+            <span class="home-choice-desc">Look up &amp; save new vocabulary</span>
+          </button>
         </div>
       </div>
     </div>
@@ -931,6 +935,9 @@ document.getElementById('homeBtn').addEventListener('click', goHome);
 document.getElementById('goFlashcards').addEventListener('click', startFlashcards);
 document.getElementById('goReview').addEventListener('click', startReview);
 document.getElementById('goReviewMarked').addEventListener('click', startReviewMarked);
+document.getElementById('goAddWords').addEventListener('click', function(){
+  window.location.href = 'vocab-add.html';
+});
 
 async function init(){
   showOnly('loadingShell');
